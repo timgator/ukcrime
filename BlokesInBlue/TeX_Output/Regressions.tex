@@ -1,0 +1,359 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage{amscd, amssymb, amsmath, verbatim, setspace}
+\usepackage[left=1.0in, right=1.0in, top=1.0in, bottom=1.0in]{geometry}
+\usepackage{indentfirst}
+\usepackage{rotating}
+\usepackage{mathrsfs}
+\usepackage{listings}
+\usepackage{graphicx}
+
+
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.97, 0.97, 0.97}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{options}\hlstd{(}\hlkwc{scipen} \hlstd{=} \hlnum{10}\hlstd{)}
+
+\hlcom{#Read in the total_crime dataset which contains the LAD values, year, and count}
+\hlstd{totCrime} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(}\hlstr{"total_crime_LAD_year.csv"}\hlstd{)}
+\hlstd{totCrime} \hlkwb{<-} \hlstd{totCrime[,}\hlopt{-}\hlnum{1}\hlstd{]} \hlcom{#Drop first column, contains an index}
+
+\hlcom{#Read in the counts of type}
+\hlstd{totType} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(}\hlstr{"type_LAD_year.csv"}\hlstd{)}
+\hlstd{totType} \hlkwb{<-} \hlstd{totType[,}\hlopt{-}\hlnum{1}\hlstd{]} \hlcom{#Drop first column, contains an index}
+
+\hlcom{#Get LAD/Year for data used in maps}
+\hlstd{shape} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(}\hlstr{"shape.csv"}\hlstd{)}
+\hlcom{#Rename column to match other files}
+\hlkwd{names}\hlstd{(shape)[}\hlkwd{names}\hlstd{(shape)}\hlopt{==}\hlstr{"District"}\hlstd{]} \hlkwb{<-} \hlstr{"LAD_name"}
+
+\hlcom{#Load unemployment data}
+\hlstd{unemp} \hlkwb{<-} \hlkwd{read.csv}\hlstd{(}\hlstr{"UnemploymentLAD.csv"}\hlstd{)}
+\hlcom{#Rename columns we are going to use to start}
+\hlkwd{names}\hlstd{(unemp)[}\hlkwd{names}\hlstd{(unemp)}\hlopt{==}\hlstr{"local.authority..district...unitary..prior.to.April.2015."}\hlstd{]} \hlkwb{<-} \hlstr{"LAD_name"}
+\hlkwd{names}\hlstd{(unemp)[}\hlkwd{names}\hlstd{(unemp)}\hlopt{==}\hlstr{"Date"}\hlstd{]} \hlkwb{<-} \hlstr{"Year"}
+\hlkwd{names}\hlstd{(unemp)[}\hlkwd{names}\hlstd{(unemp)}\hlopt{==}\hlstr{"Unemployment.rate...aged.16.64"}\hlstd{]} \hlkwb{<-} \hlstr{"Unemp16to64"}
+\hlkwd{names}\hlstd{(unemp)[}\hlkwd{names}\hlstd{(unemp)}\hlopt{==}\hlstr{"Denominator"}\hlstd{]} \hlkwb{<-} \hlstr{"Pop"}
+
+\hlcom{#Get rid of some of the extra columns}
+\hlstd{unemp} \hlkwb{<-} \hlstd{unemp[,}\hlopt{-}\hlkwd{grep}\hlstd{(}\hlstr{"(Conf|Numerator|Denominator)"}\hlstd{,}\hlkwd{names}\hlstd{(unemp))]}
+
+\hlcom{#Try the first regression}
+\hlcom{#Limit Unemployment data file to just the variables that we need}
+\hlstd{reg1.unemp} \hlkwb{<-} \hlstd{unemp[,}\hlkwd{names}\hlstd{(unemp)} \hlopt{%in%} \hlkwd{c}\hlstd{(}\hlstr{"LAD_name"}\hlstd{,}\hlstr{"Year"}\hlstd{,}\hlstr{"Unemp16to64"}\hlstd{,}\hlstr{"Pop"}\hlstd{)]}
+\hlcom{#Perform merge of unemployment data and crime data}
+\hlstd{reg1.data} \hlkwb{<-} \hlkwd{merge}\hlstd{(totCrime, reg1.unemp,} \hlkwc{by}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"LAD_name"}\hlstd{,}\hlstr{"Year"}\hlstd{),} \hlkwc{all}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlcom{#Perform merge of merged unemp/crime and the shape file for maps}
+\hlstd{reg1.data} \hlkwb{<-} \hlkwd{merge}\hlstd{(shape, reg1.data,} \hlkwc{by}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"LAD_name"}\hlstd{,}\hlstr{"Year"}\hlstd{),} \hlkwc{all.x}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+\hlcom{#Remove observations with weird characters frm Unemp16to64}
+\hlstd{reg1.data} \hlkwb{<-} \hlstd{reg1.data[}\hlopt{!}\hlstd{(reg1.data}\hlopt{$}\hlstd{Unemp16to64} \hlopt{%in%} \hlkwd{c}\hlstd{(}\hlstr{"!"}\hlstd{,}\hlstr{"-"}\hlstd{)),]}
+\hlcom{#Remove column total rows - shouldn't be there}
+\hlstd{reg1.data} \hlkwb{<-} \hlstd{reg1.data[reg1.data}\hlopt{$}\hlstd{LAD_name}\hlopt{!=}\hlstr{"Column Total"}\hlstd{,]}
+\hlcom{#Change variable formats as needed}
+\hlstd{reg1.data}\hlopt{$}\hlstd{Year} \hlkwb{<-} \hlkwd{as.factor}\hlstd{(reg1.data}\hlopt{$}\hlstd{Year)}
+\hlstd{reg1.data}\hlopt{$}\hlstd{Unemp16to64} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}\hlkwd{levels}\hlstd{(reg1.data}\hlopt{$}\hlstd{Unemp16to64))[reg1.data}\hlopt{$}\hlstd{Unemp16to64]}
+\end{alltt}
+
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning: NAs introduced by coercion}}\begin{alltt}
+\hlstd{reg1.data}\hlopt{$}\hlstd{Pop} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(}\hlkwd{levels}\hlstd{(reg1.data}\hlopt{$}\hlstd{Pop))[reg1.data}\hlopt{$}\hlstd{Pop]}
+\end{alltt}
+
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning: NAs introduced by coercion}}\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.97, 0.97, 0.97}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#Check pairs plot}
+\hlkwd{pairs}\hlstd{(reg1.data[,}\hlkwd{colnames}\hlstd{(reg1.data)} \hlopt{%in%} \hlkwd{c}\hlstd{(}\hlstr{"Year"}\hlstd{,}\hlstr{"count"}\hlstd{,}\hlstr{"Pop"}\hlstd{,}\hlstr{"Unemp16to64"}\hlstd{)])}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=0.8\linewidth]{figure/unnamed-chunk-3-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.97, 0.97, 0.97}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#First regression done}
+\hlstd{reg1} \hlkwb{<-} \hlkwd{lm}\hlstd{(count} \hlopt{~} \hlstd{Year} \hlopt{+} \hlstd{Unemp16to64} \hlopt{+} \hlstd{Pop,} \hlkwc{data}\hlstd{=reg1.data)}
+\hlkwd{summary}\hlstd{(reg1)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = count ~ Year + Unemp16to64 + Pop, data = reg1.data)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -15415  -1920   -228   1604  45249 
+## 
+## Coefficients:
+##                 Estimate   Std. Error t value         Pr(>|t|)    
+## (Intercept) -6934.500879   365.635932 -18.966          < 2e-16 ***
+## Year2012     2312.861547   321.695886   7.190 0.00000000000102 ***
+## Year2013     1801.764169   321.251464   5.609 0.00000002424131 ***
+## Year2014     2103.244290   329.959534   6.374 0.00000000024399 ***
+## Year2015     3193.214193   345.295276   9.248          < 2e-16 ***
+## Unemp16to64   561.397982    39.654550  14.157          < 2e-16 ***
+## Pop             0.142713     0.001466  97.367          < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 4007 on 1503 degrees of freedom
+## Multiple R-squared:  0.891,	Adjusted R-squared:  0.8906 
+## F-statistic:  2047 on 6 and 1503 DF,  p-value: < 2.2e-16
+\end{verbatim}
+\begin{alltt}
+\hlcom{#Get asterisks from regression}
+\hlstd{reg1sum} \hlkwb{<-} \hlkwd{summary}\hlstd{(reg1)}
+\hlstd{pvals} \hlkwb{<-} \hlkwd{coef}\hlstd{(reg1sum)[,}\hlkwd{colnames}\hlstd{(}\hlkwd{coef}\hlstd{(reg1sum))}\hlopt{==}\hlstr{"Pr(>|t|)"}\hlstd{]}
+\hlkwd{names}\hlstd{(pvals)} \hlkwb{<-} \hlkwd{rownames}\hlstd{(}\hlkwd{coef}\hlstd{(reg1sum))}
+\hlstd{sig.pvals} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{NA}\hlstd{,}\hlkwd{length}\hlstd{(pvals))}
+\hlstd{sig.pvals[pvals}\hlopt{<}\hlnum{0.01}\hlstd{]} \hlkwb{<-} \hlstr{"***"}
+\hlstd{f.p} \hlkwb{<-} \hlkwd{pf}\hlstd{(reg1sum}\hlopt{$}\hlstd{fstatistic[}\hlnum{1}\hlstd{],reg1sum}\hlopt{$}\hlstd{fstatistic[}\hlnum{2}\hlstd{],reg1sum}\hlopt{$}\hlstd{fstatistic[}\hlnum{3}\hlstd{],}\hlkwc{lower.tail}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+\hlstd{f.sig} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{NA}\hlstd{,}\hlnum{1}\hlstd{)}
+\hlstd{f.sig[f.p}\hlopt{<}\hlnum{0.01}\hlstd{]} \hlkwb{<-} \hlstr{"***"}
+\hlstd{sig.pvals} \hlkwb{<-} \hlkwd{c}\hlstd{(sig.pvals,f.sig)}
+\hlkwd{names}\hlstd{(sig.pvals)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlkwd{names}\hlstd{(pvals),}\hlstr{"fstat"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{table}[htbp]
+\makeatletter
+\setlength{\belowcaptionskip}{-2cm}   % 0.5cm as an example
+\long\def\@makecaption#1#2{%
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{#1: #2}%
+  \ifdim \wd\@tempboxa >\hsize
+    #1: #2\par
+  \else
+    \global \@minipagefalse
+    \hb@xt@\hsize{\hspace{1.20in}\box\@tempboxa\hfil}%
+  \fi  
+  \vskip\belowcaptionskip}
+\makeatother
+\caption{Regression Results}
+\vspace{1.8cm}
+\begin{center}
+\begin{tabular}{l c}
+	\hline\hline\\[-1.5ex]
+	Variables 						& OLS \\[0.5ex]
+	\hline\\[-1.5ex]
+	Unemployment					& 561.398***	\\[0ex]
+  Ages 16-64						& (14.16) \\[1.5ex]
+	Population Size 			& 0.143***	                \\[0ex]
+												& (97.37)         \\[1.5ex]
+	Year 2012     				& 2312.862***	      \\[0ex]
+												& (7.19)    \\[1.5ex]
+	Year 2013   					& 1801.764***	      \\[0ex]
+		                  	& (5.61)    \\[1.5ex]
+	Year 2014							&	2103.244***	      \\[0ex]
+	                      & (6.37)    \\[1.5ex]
+	Year 2015             & 3193.214***	      \\[0ex]
+												& (9.25)    \\[1.5ex]
+	Adjusted $R^2$				&	0.891				                                                                    \\[1.5ex]
+	$F$										&	2047.428***				                        \\[1.5ex]
+	$N$										&	1510						                                                                                \\[0.5ex]
+	\hline\\[-1.5ex]
+	\multicolumn{2}{l}{\footnotesize{Notes: t/z-values of coefficients in parentheses,}}\\
+	\multicolumn{2}{l}{\footnotesize{with level of significance shown as *** = (99\%), ** = (95\%), and * = (90\%).}}\\
+	\multicolumn{2}{l}{\footnotesize{Data is at the Local Authority District level and covers England.}}\\
+\end{tabular}
+\end{center}
+\label{RegressionResults}
+\end{table}
+
+{\setlength{\parindent}{0pt}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.97, 0.97, 0.97}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{120587}\hlstd{)}
+
+\hlcom{#Model validation}
+\hlcom{#Use cross-validation}
+\hlstd{k} \hlkwb{<-} \hlnum{10} \hlcom{#Number of cv folds}
+
+\hlcom{#Create index to identify folds}
+\hlstd{folds} \hlkwb{<-} \hlkwd{sample}\hlstd{(}\hlnum{1}\hlopt{:}\hlstd{k,} \hlkwd{nrow}\hlstd{(reg1.data),} \hlkwc{replace}\hlstd{=}\hlnum{TRUE}\hlstd{)}
+
+\hlcom{#Create matrix to store error values from each regression}
+\hlstd{cv.errors} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{NA}\hlstd{,k)}
+\hlstd{r.squared} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{NA}\hlstd{,k)}
+\hlstd{coeffs}    \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlnum{NA}\hlstd{,k,}\hlnum{7}\hlstd{)}
+
+\hlcom{#Run cross-validation for best subset selection}
+\hlkwa{for} \hlstd{(j} \hlkwa{in} \hlnum{1}\hlopt{:}\hlstd{k) \{}
+  \hlcom{#Get best subset for the fold}
+  \hlstd{lm.fit} \hlkwb{<-} \hlkwd{lm}\hlstd{(count} \hlopt{~} \hlstd{Year} \hlopt{+} \hlstd{Unemp16to64} \hlopt{+} \hlstd{Pop,} \hlkwc{data}\hlstd{=reg1.data[folds}\hlopt{!=}\hlstd{j,])}
+  \hlcom{#Get prediction for this fold and i predictors}
+  \hlstd{pred} \hlkwb{<-} \hlkwd{predict}\hlstd{(lm.fit, reg1.data[folds}\hlopt{==}\hlstd{j,])}
+  \hlcom{#Save mse}
+  \hlstd{cv.errors[j]} \hlkwb{<-} \hlkwd{mean}\hlstd{((reg1.data}\hlopt{$}\hlstd{count[folds}\hlopt{==}\hlstd{j]}\hlopt{-}\hlstd{pred)}\hlopt{^}\hlnum{2}\hlstd{)}
+  \hlstd{r.squared[j]} \hlkwb{<-} \hlkwd{summary}\hlstd{(lm.fit)}\hlopt{$}\hlstd{adj.r.squared}
+  \hlstd{coeffs[j,]}   \hlkwb{<-} \hlkwd{coefficients}\hlstd{(lm.fit)}
+\hlstd{\}}
+
+\hlkwd{colnames}\hlstd{(coeffs)} \hlkwb{<-} \hlkwd{names}\hlstd{(}\hlkwd{coefficients}\hlstd{(lm.fit))}
+
+\hlcom{#Take average of vector to get test mse}
+\hlstd{mean.cv.errors} \hlkwb{<-} \hlkwd{mean}\hlstd{(cv.errors)}
+
+\hlcom{#CV Error}
+\hlkwd{plot}\hlstd{(cv.errors,} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}\hlkwc{main}\hlstd{=}\hlstr{"Cross-Validation MSE by Fold"}\hlstd{,}
+     \hlkwc{xlab}\hlstd{=}\hlstr{"Fold"}\hlstd{,}
+     \hlkwc{ylab}\hlstd{=}\hlstr{"Mean-Squared Error"}\hlstd{,}\hlkwc{yaxt}\hlstd{=}\hlstr{"n"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=mean.cv.errors,}\hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+
+\hlkwd{legend}\hlstd{(}\hlstr{"topright"}\hlstd{,}
+       \hlkwc{legend}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"Value"}\hlstd{,}\hlstr{"Cross-fold Mean"}\hlstd{),}
+       \hlkwc{col}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"black"}\hlstd{,}\hlstr{"red"}\hlstd{),}
+       \hlkwc{lwd}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{lty}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{cex}\hlstd{=}\hlnum{0.7}\hlstd{)}
+
+\hlstd{yax.avg} \hlkwb{<-} \hlkwd{seq}\hlstd{(}\hlnum{10000000}\hlstd{,}\hlnum{24000000}\hlstd{,}\hlnum{2000000}\hlstd{)}
+\hlkwd{axis}\hlstd{(}\hlnum{2}\hlstd{,}\hlkwc{at}\hlstd{=yax.avg,} \hlkwc{labels}\hlstd{=}\hlkwd{prettyNum}\hlstd{(yax.avg,} \hlkwc{big.mark}\hlstd{=}\hlstr{","}\hlstd{,} \hlkwc{scientific}\hlstd{=}\hlnum{FALSE}\hlstd{))}
+
+\hlcom{#R^2}
+\hlkwd{plot}\hlstd{(r.squared,} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}\hlkwc{main}\hlstd{=}\hlkwd{bquote}\hlstd{(R}\hlopt{^}\hlnum{2}\hlopt{*}\hlstr{" by Fold"}\hlstd{),}
+     \hlkwc{xlab}\hlstd{=}\hlstr{"Fold"}\hlstd{,}
+     \hlkwc{ylab}\hlstd{=}\hlkwd{bquote}\hlstd{(R}\hlopt{^}\hlnum{2}\hlstd{))}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(r.squared),}\hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+
+\hlkwd{legend}\hlstd{(}\hlstr{"topright"}\hlstd{,}
+       \hlkwc{legend}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"Value"}\hlstd{,}\hlstr{"Cross-fold Mean"}\hlstd{),}
+       \hlkwc{col}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"black"}\hlstd{,}\hlstr{"red"}\hlstd{),}
+       \hlkwc{lwd}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{lty}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{cex}\hlstd{=}\hlnum{0.7}\hlstd{)}
+
+\hlcom{#Unemployment}
+\hlkwd{plot}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Unemp16to64"}\hlstd{],} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}
+     \hlkwc{main}\hlstd{=}\hlstr{"Unemployment (16-64) Coefficient by Fold"}\hlstd{,}
+     \hlkwc{xlab}\hlstd{=}\hlstr{"Fold"}\hlstd{,}
+     \hlkwc{ylab}\hlstd{=}\hlstr{"Coefficient"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Unemp16to64"}\hlstd{]),}
+       \hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+
+\hlkwd{legend}\hlstd{(}\hlstr{"topright"}\hlstd{,}
+       \hlkwc{legend}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"Value"}\hlstd{,}\hlstr{"Cross-fold Mean"}\hlstd{),}
+       \hlkwc{col}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"black"}\hlstd{,}\hlstr{"red"}\hlstd{),}
+       \hlkwc{lwd}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{lty}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{cex}\hlstd{=}\hlnum{0.7}\hlstd{)}
+
+\hlcom{#Unemployment}
+\hlkwd{plot}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Pop"}\hlstd{],} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}
+     \hlkwc{main}\hlstd{=}\hlstr{"Population Coefficient by Fold"}\hlstd{,}
+     \hlkwc{xlab}\hlstd{=}\hlstr{"Fold"}\hlstd{,}
+     \hlkwc{ylab}\hlstd{=}\hlstr{"Coefficient"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Pop"}\hlstd{]),}
+       \hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+
+\hlkwd{legend}\hlstd{(}\hlstr{"topright"}\hlstd{,}
+       \hlkwc{legend}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"Value"}\hlstd{,}\hlstr{"Cross-fold Mean"}\hlstd{),}
+       \hlkwc{col}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"black"}\hlstd{,}\hlstr{"red"}\hlstd{),}
+       \hlkwc{lwd}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{lty}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{cex}\hlstd{=}\hlnum{0.7}\hlstd{)}
+
+\hlstd{ybounds} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlkwd{min}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2012"}\hlstd{],}
+                 \hlstd{coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2013"}\hlstd{],}
+                 \hlstd{coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2014"}\hlstd{],}
+                 \hlstd{coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2015"}\hlstd{]),}
+             \hlkwd{max}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2012"}\hlstd{],}
+                 \hlstd{coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2013"}\hlstd{],}
+                 \hlstd{coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2014"}\hlstd{],}
+                 \hlstd{coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2015"}\hlstd{]))}
+
+\hlkwd{plot}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2012"}\hlstd{],} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}\hlkwc{main}\hlstd{=}\hlstr{"Year Coefficients by Fold"}\hlstd{,}
+     \hlkwc{xlab}\hlstd{=}\hlstr{"Fold"}\hlstd{,}
+     \hlkwc{ylab}\hlstd{=}\hlstr{"Year Coefficient"}\hlstd{,}
+     \hlkwc{ylim}\hlstd{=ybounds,}
+     \hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{,}\hlkwc{yaxt}\hlstd{=}\hlstr{"n"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2012"}\hlstd{]),}\hlkwc{col}\hlstd{=}\hlstr{"red"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+\hlkwd{lines}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2013"}\hlstd{],} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}\hlkwc{col}\hlstd{=}\hlstr{"blue"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2013"}\hlstd{]),}\hlkwc{col}\hlstd{=}\hlstr{"blue"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+\hlkwd{lines}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2014"}\hlstd{],} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}\hlkwc{col}\hlstd{=}\hlstr{"green"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2014"}\hlstd{]),}\hlkwc{col}\hlstd{=}\hlstr{"green"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+\hlkwd{lines}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2015"}\hlstd{],} \hlkwc{type}\hlstd{=}\hlstr{"b"}\hlstd{,}\hlkwc{col}\hlstd{=}\hlstr{"purple"}\hlstd{)}
+\hlkwd{abline}\hlstd{(}\hlkwc{h}\hlstd{=}\hlkwd{mean}\hlstd{(coeffs[,}\hlkwd{colnames}\hlstd{(coeffs)}\hlopt{==}\hlstr{"Year2015"}\hlstd{]),}\hlkwc{col}\hlstd{=}\hlstr{"purple"}\hlstd{,}\hlkwc{lty}\hlstd{=}\hlnum{2}\hlstd{)} \hlcom{#Plot average fold}
+
+\hlkwd{legend}\hlstd{(}\hlkwc{x}\hlstd{=}\hlnum{7.5}\hlstd{,}\hlkwc{y}\hlstd{=}\hlnum{3000}\hlstd{,}
+       \hlkwc{legend}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"2012 Value"}\hlstd{,}\hlstr{"2012 Cross-fold Mean"}\hlstd{,}
+                \hlstr{"2013 Value"}\hlstd{,}\hlstr{"2013 Cross-fold Mean"}\hlstd{,}
+                \hlstr{"2014 Value"}\hlstd{,}\hlstr{"2014 Cross-fold Mean"}\hlstd{,}
+                \hlstr{"2015 Value"}\hlstd{,}\hlstr{"2015 Cross-fold Mean"}\hlstd{),}
+       \hlkwc{col}\hlstd{=}\hlkwd{c}\hlstd{(}\hlstr{"red"}\hlstd{,}\hlstr{"red"}\hlstd{,}\hlstr{"blue"}\hlstd{,}\hlstr{"blue"}\hlstd{,}\hlstr{"green"}\hlstd{,}\hlstr{"green"}\hlstd{,}\hlstr{"purple"}\hlstd{,}\hlstr{"purple"}\hlstd{),}
+       \hlkwc{lwd}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{lty}\hlstd{=}\hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{1}\hlstd{,}\hlnum{2}\hlstd{),} \hlkwc{cex}\hlstd{=}\hlnum{0.7}\hlstd{)}
+
+\hlstd{yax.avg} \hlkwb{<-} \hlkwd{seq}\hlstd{(}\hlnum{1500}\hlstd{,}\hlnum{3500}\hlstd{,}\hlnum{500}\hlstd{)}
+\hlkwd{axis}\hlstd{(}\hlnum{2}\hlstd{,}\hlkwc{at}\hlstd{=yax.avg,} \hlkwc{labels}\hlstd{=}\hlkwd{prettyNum}\hlstd{(yax.avg,} \hlkwc{big.mark}\hlstd{=}\hlstr{","}\hlstd{,} \hlkwc{scientific}\hlstd{=}\hlnum{FALSE}\hlstd{))}
+\end{alltt}
+\end{kframe}
+
+\includegraphics[width=0.5\linewidth]{figure/unnamed-chunk-5-1} 
+\includegraphics[width=0.5\linewidth]{figure/unnamed-chunk-5-2} 
+\includegraphics[width=0.5\linewidth]{figure/unnamed-chunk-5-3} 
+\includegraphics[width=0.5\linewidth]{figure/unnamed-chunk-5-4} 
+\includegraphics[width=0.5\linewidth]{figure/unnamed-chunk-5-5} \hfill{}
+
+
+
+\end{knitrout}
+}
+
+\end{document}
+
